@@ -17,7 +17,7 @@ describe('AuthController', () => {
                     useValue: {
                         login: jest
                             .fn()
-                            .mockReturnValue(new Promise((resolve) => {resolve(mockJWT)}))
+                            .mockReturnValue(new Promise(resolve => { resolve(mockJWT) }))
                     }
                 }
             ]

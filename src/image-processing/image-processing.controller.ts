@@ -1,7 +1,9 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ImageProcessingService } from './image-processing.service';
+import { AuthGuard } from '../auth/auth.guard';
 
-@Controller()
+@Controller('image')
+@UseGuards(AuthGuard)
 export class ImageProcessingController {
     constructor(private readonly imageProcessingService: ImageProcessingService) {}
 
@@ -9,20 +11,16 @@ export class ImageProcessingController {
     retrieveImage(id: number): string { // This must retrieve an image
         return this.imageProcessingService.get(id);
     }
-
     @Get()
-    listImages(): [string] { // Retrieve a JSON with images links
+    listImages(): string[] { // Retrieve a JSON with images links
         return this.imageProcessingService.getAll();
     }
-
     @Post()
     uploadImage(): string { // This must receive an image
         return this.imageProcessingService.upload();
     }
-
     @Post()
     transformImage(): boolean { // This must receive a list of transformations
         return this.imageProcessingService.apply();
     }
-
 }
