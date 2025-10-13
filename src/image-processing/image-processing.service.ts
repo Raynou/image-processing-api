@@ -1,18 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-/**
- * There's the `merequetengue`
- */
-
-interface iImageProcessingService {
-    get(id: number): string,
-    getAll(): [string],
-    upload(): string,
-    apply(): boolean
-}
-
 @Injectable()
-export class ImageProcessingService implements iImageProcessingService {
+export class ImageProcessingService {
     apply(): boolean {
         throw new Error('Method not implemented.');
     }
@@ -22,7 +11,11 @@ export class ImageProcessingService implements iImageProcessingService {
     getAll(): [string] {
         throw new Error('Method not implemented.');
     }
-    upload(): string {
+    upload(file: Express.Multer.File): string {
+        // Save the file in AWS S3
+        // Get the object's url
+        // Store the url in db
+        // Return { id: number, url: string }
         throw new Error('Method not implemented.');
     }
 }
