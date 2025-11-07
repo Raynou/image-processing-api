@@ -6,8 +6,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { CryptService } from './crypt.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserAlreadyExistsException } from '../exception/user-already-exists.exception';
-import { InvalidFieldValueException } from '../exception/invalid-field-value.exception';
+import { UserAlreadyExistsException } from '../exceptions/user-already-exists.exception';
+import { InvalidFieldValueException } from '../exceptions/invalid-field-value.exception';
 
 @Injectable()
 export class AuthService {
