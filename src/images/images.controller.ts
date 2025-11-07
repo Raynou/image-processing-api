@@ -19,6 +19,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { TransformationsDTO } from './dto/transformations.dto';
+import { OptionalFilePipe } from './pipelines/optional-file.pipeline';
 
 @Controller('image')
 @UseGuards(AuthGuard)
@@ -58,8 +59,10 @@ export class ImagesController {
     @Body() body: TransformationsDTO,
     @Param('id') id: string, // Use a pipeline here
     @Req() request: Request,
-    @UploadedFile()
-    watermarkFile?: Express.Multer.File, // Create a custom pipeline to validate file format: https://claude.ai/chat/f47babad-7c21-424e-a310-a5ed1b16bb4e
+    @UploadedFile(
+      new OptionalFilePipe(500_000, /image\/(jpeg|jpg|png)/)
+    )
+    watermarkFile?: Express.Multer.File,
   ): Promise<StreamableFile> {
     return new StreamableFile(
       await this.imagesService.apply(body, id, request, watermarkFile),
