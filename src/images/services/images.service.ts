@@ -42,7 +42,7 @@ export class ImagesService {
 
   async apply(
     transformationsDTO: TransformationsDTO,
-    imageId: string,
+    imageId: number,
     @Req() request: Request,
     watermarkFile?: Express.Multer.File,
   ): Promise<Uint8Array<ArrayBufferLike>> {

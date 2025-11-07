@@ -6,6 +6,7 @@ import {
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
+  ParseIntPipe,
   Post,
   Put,
   Req,
@@ -27,8 +28,8 @@ export class ImagesController {
   constructor(private readonly imagesService: ImagesService) {}
 
   @Get(':id')
-  retrieveImage(@Param('id') id: string /* Use a pipeline here */, @Req() request: Request) {
-    return this.imagesService.getOne(Number(id), request);
+  retrieveImage(@Param('id', ParseIntPipe) id: number, @Req() request: Request) {
+    return this.imagesService.getOne(id, request);
   }
 
   @Get()
@@ -57,7 +58,7 @@ export class ImagesController {
   @UseInterceptors(FileInterceptor('file'))
   async transformImage(
     @Body() body: TransformationsDTO,
-    @Param('id') id: string, // Use a pipeline here
+    @Param('id', ParseIntPipe) id: number,
     @Req() request: Request,
     @UploadedFile(
       new OptionalFilePipe(500_000, /image\/(jpeg|jpg|png)/)
