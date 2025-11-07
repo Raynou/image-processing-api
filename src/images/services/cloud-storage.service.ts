@@ -13,6 +13,7 @@ import {
   S3,
 } from '@aws-sdk/client-s3';
 import { constants } from '../constants';
+import { ImageNotFoundException } from '../exceptions/image-not-found.exception';
 
 @Injectable()
 export class CloudStorageService implements OnModuleInit {
@@ -81,7 +82,7 @@ export class CloudStorageService implements OnModuleInit {
         }),
       )
     ).Body?.transformToByteArray();
-    if (image === undefined) throw new Error(); // FIXME: Throw a custom error
+    if (image === undefined) throw new ImageNotFoundException("");
     return image;
   }
 

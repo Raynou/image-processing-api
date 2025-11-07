@@ -42,11 +42,6 @@ export class ProcessingService {
     filters: { grayscale: boolean; sepia: boolean },
   ) {
     let pipeline = sharp(image);
-    /**
-     * FIXME: The grayscale filter overrides every else so
-     * it's pointless to this "pipeline" approach. Change this
-     * code in order to just apply a filter at once.
-     */
     if (filters.grayscale) {
       pipeline.grayscale();
     } else if (filters.sepia) {

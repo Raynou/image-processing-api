@@ -10,6 +10,7 @@ import type { Request } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProcessingService } from './processing.service';
 import { CloudStorageService } from './cloud-storage.service';
+import { ImageNotFoundException } from '../exceptions/image-not-found.exception';
 
 type TransformationHandler = (
   image: Uint8Array,
@@ -53,7 +54,7 @@ export class ImagesService {
     });
 
     if (!imageWithOwner) {
-      throw new Error(''); // FIXME: Throw a custom error here
+      throw new ImageNotFoundException("");
     }
 
     if (watermarkFile && transformations.watermark?.type === 'image') {
@@ -80,7 +81,7 @@ export class ImagesService {
       where: { id, ownerId },
     });
     if (!image) {
-      throw new Error(); // FIXME: Create a custom exception here
+      throw new ImageNotFoundException("");
     }
     return { id: image.id, key: image.key };
   }
