@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ImageProcessingController } from './images.controller';
-import { ImageProcessingService } from './images.service';
+import { ImagesController } from './images.controller';
+import { ImagesService } from './services/images.service';
 import { AuthGuard } from '../auth/auth.guard';
-const httpMock = require('node-http-mock');
+import httpMock from 'node-mocks-http';
+import { Readable } from 'node:stream';
+import { TransformationsDTO } from './dto/transformations.dto';
 
 describe('ImageProcessingController', () => {
-  let controller: ImageProcessingController;
+  let controller: ImagesController;
 
   const mockImageProcessingService = {
     apply: jest.fn(),
@@ -30,12 +32,29 @@ describe('ImageProcessingController', () => {
 
   const oneImage = images[0];
 
+  const mockImage: Express.Multer.File = {
+    fieldname: 'file',
+    originalname: 'image.jpg',
+    encoding: '7bit',
+    mimetype: 'image/png',
+    size: 1024,
+    stream: Readable.from([Buffer.from([0x89, 0x50, 0x4e, 0x47])]),
+    destination: '/foo',
+    filename: 'test-image.png',
+    path: '/foo/test-image.png',
+    buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  };
+
+  const mockTransformationsDTO: TransformationsDTO = {
+    imageId: '1'
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ImageProcessingController],
+      controllers: [ImagesController],
       providers: [
         {
-          provide: ImageProcessingService,
+          provide: ImagesController,
           useValue: mockImageProcessingService,
         },
       ],
@@ -44,8 +63,8 @@ describe('ImageProcessingController', () => {
       .useValue({ canActivate: jest.fn().mockImplementation(() => true) })
       .compile();
 
-    controller = module.get<ImageProcessingController>(
-      ImageProcessingController,
+    controller = module.get<ImagesController>(
+      ImagesController,
     );
   });
 
@@ -53,9 +72,10 @@ describe('ImageProcessingController', () => {
     expect(controller).toBeDefined();
   });
   describe('retrieveImage', () => {
-    it('retrieve an image object "{ id: number, image_link: string }"', async () => {
+    it('should retrieve an image object "{ id: number, image_link: string }"', async () => {
       mockImageProcessingService.getOne.mockResolvedValueOnce(oneImage);
       const result = await controller.retrieveImage('1', mockRequest);
+
       expect(result).toEqual(
         expect.objectContaining({
           id: expect.any(Number),
@@ -67,10 +87,21 @@ describe('ImageProcessingController', () => {
   describe('listImages', () => {
     it('return a list of images', async () => {
       mockImageProcessingService.getAll.mockResolvedValueOnce(images);
+
       const result = await controller.listImages(mockRequest);
-      expect(result).toEqual();
+      expect(result).toEqual(images);
     });
   });
-  describe('uploadImage', () => {});
-  describe('transformImage', () => {});
+  describe('uploadImage', () => {
+    it('should upload an image', async () => {
+      const result = await controller.uploadImage(mockImage, mockRequest);
+      expect(result).toBe({
+        id: oneImage.id,
+        image_link: oneImage.image_link,
+      });
+    });
+  });
+  describe('transformImage', async () => { 
+    const result = await controller.transformImage(mockTransformationsDTO, mockRequest);
+   });
 });
