@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
-import { AuthService } from './service/auth.service';
+import { AuthService } from './services/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { AuthGuard } from './auth.guard';
-import { CryptService } from './service/crypt.service';
+import { CryptService } from './services/crypt.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
