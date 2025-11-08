@@ -123,25 +123,9 @@ export class ProcessingService {
 
   async aiUpScale(
     image: Uint8Array<ArrayBufferLike>,
-    options: { width: number, height: number }
+    options: { width: number; height: number },
   ): Promise<Buffer<ArrayBufferLike>> {
-    /**
-     * You can start using this library: https://upscalerjs.com/ and then
-     * you can scale this to a microservice built with python to improve
-     * perfomance and the scaling results:
-     * https://chatgpt.com/c/69087963-17e8-8327-8af7-bdc712f50c06
-     * https://claude.ai/chat/e9d7331d-6af2-4e91-97f3-ce3bc23f3bff
-     */
-    const upscaler = new Upscaler({
-      model: x4,
-    });
-    // This is a Base64 URI 
-    const upscaledImage = await upscaler.upscale({
-      width: options.width,
-      height: options.height,
-      data: image,
-    });
-    return Buffer.from(upscaledImage);
+    throw new NotImplementedException();
   }
 
   async removeWatermark(): Promise<Buffer<ArrayBufferLike>> {
