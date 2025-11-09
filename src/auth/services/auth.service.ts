@@ -30,7 +30,7 @@ export class AuthService {
       );
     }
     if (user?.password !== this.cryptService.hash(password)) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(); // Add a descriptive error message here
     }
     const payload = { sub: user.id, username: user.username };
     return {
