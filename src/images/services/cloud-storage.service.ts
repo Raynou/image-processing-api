@@ -4,20 +4,21 @@ import {
   PutObjectCommand,
   CreateBucketCommand,
   DeleteObjectCommand,
-  DeleteBucketCommand,
-  paginateListObjectsV2,
   GetObjectCommand,
   S3ClientConfig,
   HeadBucketCommand,
-  GetObjectCommandOutput,
-  S3,
 } from '@aws-sdk/client-s3';
-import { constants } from '../constants';
 import { ImageNotFoundException } from '../exceptions/image-not-found.exception';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CloudStorageService implements OnModuleInit {
   private S3Client: S3Client;
+  private bucketName: string;
+
+  constructor(private readonly configService: ConfigService) {
+    this.bucketName = configService.get<string>('BUCKET_NAME') || 'bucket-dev';
+  }
 
   async onModuleInit() {
     const IS_DEV = process.env.NODE_ENV === 'development';
@@ -29,7 +30,7 @@ export class CloudStorageService implements OnModuleInit {
     const cfg: Partial<S3ClientConfig> = {};
 
     if (IS_DEV) {
-      cfg.endpoint = constants.awsEndpoint || 'http://localhost:4566';
+      cfg.endpoint = this.configService.get<string>('AWS_ENDPOINT');
       cfg.credentials = { accessKeyId: 'test', secretAccessKey: 'test' };
       cfg.forcePathStyle = true;
     }
@@ -37,10 +38,10 @@ export class CloudStorageService implements OnModuleInit {
     this.S3Client = new S3Client(cfg);
 
     // Create a development bucket if not exists
-    if (IS_DEV && !(await this.bucketExists(constants.bucketName))) {
+    if (IS_DEV && !(await this.bucketExists(this.bucketName))) {
       await this.S3Client.send(
         new CreateBucketCommand({
-          Bucket: constants.bucketName,
+          Bucket: this.bucketName,
         }),
       );
     }
@@ -66,7 +67,7 @@ export class CloudStorageService implements OnModuleInit {
   async uploadImage(key: string, content: Buffer<ArrayBufferLike>) {
     await this.S3Client.send(
       new PutObjectCommand({
-        Bucket: constants.bucketName,
+        Bucket: this.bucketName,
         Key: key,
         Body: content,
       }),
@@ -77,19 +78,19 @@ export class CloudStorageService implements OnModuleInit {
     const image = (
       await this.S3Client.send(
         new GetObjectCommand({
-          Bucket: constants.bucketName,
+          Bucket: this.bucketName,
           Key: key,
         }),
       )
     ).Body?.transformToByteArray();
-    if (image === undefined) throw new ImageNotFoundException("");
+    if (image === undefined) throw new ImageNotFoundException('');
     return image;
   }
 
   async deleteImage(key: string) {
     await this.S3Client.send(
       new DeleteObjectCommand({
-        Bucket: constants.bucketName,
+        Bucket: this.bucketName,
         Key: key,
       }),
     );
