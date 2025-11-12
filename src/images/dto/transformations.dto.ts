@@ -6,12 +6,11 @@ interface Transformations {
   rotate?: number;
   filters?: { grayscale: boolean; sepia: boolean };
   mirror?: boolean;
-  compress?: { quality: number };
+  compress?: { quality: number, format: 'jpg' | 'jpeg' | 'png'; };
   watermark?: WatermarkOptions;
   upscale?: { width: number; height: number }
 }
 
 export class TransformationsDTO {
-  //format: 'jpg' | 'jpeg' | 'png'; // Not yet
   transformations: Transformations;
 }

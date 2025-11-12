@@ -1,7 +1,5 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
 import sharp from 'sharp';
-import Upscaler from 'upscaler';
-import x4 from '@upscalerjs/esrgan-thick/4x';
 import {
   type WatermarkOptions,
   type TextWatermarkOptions,
@@ -54,18 +52,31 @@ export class ProcessingService {
     return await sharp(image).flip().toBuffer();
   }
 
-  /**
-   * Compress JPG file
-   */
   async compress(
     image: Uint8Array<ArrayBufferLike>,
-    params: { quality: number },
+    params: { quality: number; format: 'jpg' | 'jpeg' | 'png' },
   ) {
-    return await sharp(image)
-      .jpeg({
-        quality: params.quality,
-      })
-      .toBuffer();
+    let { quality, format } = params;
+
+    if (!format) {
+      throw new Error('Image format is undefined');
+    }
+
+    if (typeof quality !== 'number' || quality < 1 || quality > 100) {
+      throw new Error('Invalid argument value in parameter: "quality"');
+    }
+
+    let sharpImage = sharp(image);
+    switch (format) {
+      case 'jpeg':
+      case 'jpg':
+        sharpImage.jpeg({ quality: quality });
+        break;
+      case 'png':
+        sharpImage.png({ quality: quality });
+        break;
+    }
+    return await sharpImage.toBuffer();
   }
 
   async applyWatermark(
