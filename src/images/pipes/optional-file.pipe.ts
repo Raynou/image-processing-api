@@ -29,5 +29,6 @@ export class OptionalFilePipe implements PipeTransform {
         `Invalid file type. Only JPEG, JPG, and PNG are allowed`,
       );
     }
+    return file;
   }
 }

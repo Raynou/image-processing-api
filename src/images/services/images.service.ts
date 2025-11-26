@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotImplementedException,
-  Param,
   Req,
 } from '@nestjs/common';
 import { TransformationsDTO } from '../dto/transformations.dto';
@@ -45,34 +44,34 @@ export class ImagesService {
     imageId: number,
     @Req() request: Request,
     watermarkFile?: Express.Multer.File,
-  ): Promise<Uint8Array<ArrayBufferLike>> {
+  ): Promise<{ image: Uint8Array<ArrayBufferLike>; format: string }> {
     // Maybe it'd be convenient to store the modified image in S3
     const { transformations } = transformationsDTO;
     const requestUserId: number = request['user'].subject;
     const imageWithOwner = await this.prisma.image.findUnique({
-      where: { id: Number(imageId), ownerId: requestUserId },
+      where: { id: imageId, ownerId: requestUserId },
     });
 
     if (!imageWithOwner) {
-      throw new ImageNotFoundException("");
+      throw new ImageNotFoundException(`Image with id: ${imageId} was not found`);
     }
 
     if (watermarkFile && transformations.watermark?.type === 'image') {
       transformations.watermark.image = watermarkFile.buffer;
     }
 
-    let imageBuffer = await this.cloudStorageService.getImage(
-      imageWithOwner.key,
-    );
+    let image = await this.cloudStorageService.getImage(imageWithOwner.key);
 
     for (const [operation, params] of Object.entries(transformations)) {
       const handler = this.transformationHandlers[operation];
 
       if (handler && params !== undefined && params !== null) {
-        imageBuffer = await handler(imageBuffer, params);
+        image = await handler(image, params);
       }
     }
-    return imageBuffer;
+
+    const format = await this.processingService.getFormat(image);
+    return { image, format };
   }
 
   async getOne(id: number, @Req() request: Request): Promise<ImageDTO> {
@@ -81,7 +80,7 @@ export class ImagesService {
       where: { id, ownerId },
     });
     if (!image) {
-      throw new ImageNotFoundException("");
+      throw new ImageNotFoundException(`Image with id: ${id} was not found`);
     }
     return { id: image.id, key: image.key };
   }

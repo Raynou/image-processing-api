@@ -1,4 +1,7 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotImplementedException,
+} from '@nestjs/common';
 import sharp from 'sharp';
 import {
   type WatermarkOptions,
@@ -8,6 +11,10 @@ import {
 
 @Injectable()
 export class ProcessingService {
+  async getFormat(image: Uint8Array<ArrayBufferLike>): Promise<string> {
+    return (await sharp(image).metadata()).format;
+  }
+
   async resize(
     image: Uint8Array<ArrayBufferLike>,
     params: { width: number; height: number },
@@ -54,19 +61,11 @@ export class ProcessingService {
 
   async compress(
     image: Uint8Array<ArrayBufferLike>,
-    params: { quality: number; format: 'jpg' | 'jpeg' | 'png' },
+    params: { quality: number },
   ) {
-    let { quality, format } = params;
-
-    if (!format) {
-      throw new Error('Image format is undefined');
-    }
-
-    if (typeof quality !== 'number' || quality < 1 || quality > 100) {
-      throw new Error('Invalid argument value in parameter: "quality"');
-    }
-
+    let { quality } = params;
     let sharpImage = sharp(image);
+    const format = (await sharpImage.metadata()).format;
     switch (format) {
       case 'jpeg':
       case 'jpg':
@@ -85,11 +84,8 @@ export class ProcessingService {
   ) {
     if (options.type === 'image') {
       return this.applyImageWatermark(image, options);
-    } else if (options.type === 'text') {
-      return this.applyTextWatermark(image, options);
-    } else {
-      throw new Error('Unsupported watermark application procedure');
-    }
+    } 
+    return this.applyTextWatermark(image, options);
   }
 
   private async applyImageWatermark(
